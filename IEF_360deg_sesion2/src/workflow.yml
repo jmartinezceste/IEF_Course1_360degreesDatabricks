@@ -1,0 +1,116 @@
+resources:
+  jobs:
+    Practica_Final:
+      name: Practica_Final
+      tasks:
+        - task_key: ingestar_aeropuertos
+          spark_python_task:
+            python_file: /Workspace/Users/psanzcape@gmail.com/databricks/Sesion_3/src/01_ingesta_datos.py
+            parameters:
+              - --input_file=/Volumes/sesion_3/default/datos/aeropuertos.csv
+              - --output_table=sesion_3.aviones_bronce.dim_aeropuertos
+              - --write_mode=overwrite
+              - --partition_by=
+          environment_key: Default
+        - task_key: ingestar_csv_aeronaves
+          spark_python_task:
+            python_file: /Workspace/Users/psanzcape@gmail.com/databricks/Sesion_3/src/01_ingesta_datos.py
+            parameters:
+              - --input_file=/Volumes/sesion_3/default/datos/aeronaves.csv
+              - --output_table=sesion_3.aviones_bronce.dim_aeronaves
+              - --write_mode=overwrite
+              - --partition_by=
+          environment_key: Default
+        - task_key: ingestar_datos_vuelos
+          spark_python_task:
+            python_file: /Workspace/Users/psanzcape@gmail.com/databricks/Sesion_3/src/01_ingesta_datos.py
+            parameters:
+              - --input_file=/Volumes/sesion_3/default/datos/vuelos_diarios.csv
+              - --output_table=sesion_3.aviones_bronce.fact_vuelos
+              - --write_mode=overwrite
+              - --partition_by=
+          environment_key: Default
+        - task_key: ingestar_mantenimiento_db
+          spark_python_task:
+            python_file: /Workspace/Users/psanzcape@gmail.com/databricks/Sesion_3/src/01_1_ingestar_datos_aws.py
+            parameters:
+              - --input_file=/Volumes/sesion_3/default/datos/mantenimientos_rds.csv
+              - --output_table=sesion_3.aviones_bronce.fact_mantenimiento
+              - --write_mode=overwrite
+              - --partition_by=mantenimiento_id
+          environment_key: Default
+        - task_key: validar_datos_aeronaves
+          depends_on:
+            - task_key: ingestar_csv_aeronaves
+          spark_python_task:
+            python_file: /Workspace/Users/psanzcape@gmail.com/databricks/Sesion_3/src/02_validar_datos.py
+            parameters:
+              - --input_table=sesion_3.aviones_bronce.dim_aeronaves
+              - --output_table=sesion_3.aviones_plata.dim_aeronaves
+              - --config_path=/Volumes/sesion_3/default/datos/config.json
+              - --table_name=aeronaves
+          environment_key: Default
+        - task_key: validar_datos_aeropuertos
+          depends_on:
+            - task_key: ingestar_aeropuertos
+          spark_python_task:
+            python_file: /Workspace/Users/psanzcape@gmail.com/databricks/Sesion_3/src/02_validar_datos.py
+            parameters:
+              - --input_table=sesion_3.aviones_bronce.dim_aeropuertos
+              - --output_table=sesion_3.aviones_plata.dim_aeropuertos
+              - --config_path=/Volumes/sesion_3/default/datos/config.json
+              - --table_name=aeropuertos
+          environment_key: Default
+        - task_key: validar_datos_mantenimiento
+          depends_on:
+            - task_key: ingestar_mantenimiento_db
+          spark_python_task:
+            python_file: /Workspace/Users/psanzcape@gmail.com/databricks/Sesion_3/src/02_validar_datos.py
+            parameters:
+              - --input_table=sesion_3.aviones_bronce.fact_mantenimiento
+              - --output_table=sesion_3.aviones_plata.fact_mantenimiento
+              - --config_path=/Volumes/sesion_3/default/datos/config.json
+              - --table_name=mantenimientos
+          environment_key: Default
+        - task_key: costo_mantenimiento
+          depends_on:
+            - task_key: validar_datos_mantenimiento
+            - task_key: validar_datos_aeronaves
+          spark_python_task:
+            python_file: /Workspace/Users/psanzcape@gmail.com/databricks/Sesion_3/src/04_costo_mantenimiento.py
+            parameters:
+              - --aeronaves_table=sesion_3.aviones_plata.dim_aeronaves
+              - --mantenimiento_table=sesion_3.aviones_plata.fact_mantenimiento
+              - --output_table=sesion_3.aviones_oro.costo_mantenimiento
+          environment_key: Default
+        - task_key: validar_datos_vuelos
+          depends_on:
+            - task_key: ingestar_datos_vuelos
+          spark_python_task:
+            python_file: /Workspace/Users/psanzcape@gmail.com/databricks/Sesion_3/src/02_validar_datos.py
+            parameters:
+              - --input_table=sesion_3.aviones_bronce.fact_vuelos
+              - --output_table=sesion_3.aviones_plata.fact_vuelos
+              - --config_path=/Volumes/sesion_3/default/datos/config.json
+              - --table_name=vuelos
+          environment_key: Default
+        - task_key: puntualidad_vuelos
+          depends_on:
+            - task_key: validar_datos_aeropuertos
+            - task_key: validar_datos_vuelos
+            - task_key: validar_datos_aeronaves
+          spark_python_task:
+            python_file: /Workspace/Users/psanzcape@gmail.com/databricks/Sesion_3/src/03_puntualidad_vuelos.py
+            parameters:
+              - --vuelos_table=sesion_3.aviones_plata.fact_vuelos
+              - --aeronaves_table=sesion_3.aviones_plata.dim_aeronaves
+              - --aeropuertos_table=sesion_3.aviones_plata.dim_aeropuertos
+              - --output_table=sesion_3.aviones_oro.puntualidad_vuelos
+          environment_key: Default
+      queue:
+        enabled: true
+      environments:
+        - environment_key: Default
+          spec:
+            client: "2"
+      performance_target: PERFORMANCE_OPTIMIZED
