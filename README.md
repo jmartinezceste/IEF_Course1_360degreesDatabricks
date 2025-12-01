@@ -5,18 +5,24 @@ In this 4-session course, we'll explore the entire Databricks platform.  We'll s
 • Fundamentales Databricks
 
 • Entender entorno
+
 • DEMO con ejercicios
 
 ## Databricks Workflows y Optimizacion de Spark
 • ETL end-to-end en Databricks
-• Lazy Spark y Spark Frameworks
+
+• Lazy Spark y Spark Frameworks
 
 ## Unity Catalog I
 • Acces Control
+
 • Data Discovery
-• Data Lineage
+
+• Data Lineage
 
 ## Unity Catalog II
 • Data Auditing
+
 • Data Sharing
+
 • Data Monitoring (Quality)
