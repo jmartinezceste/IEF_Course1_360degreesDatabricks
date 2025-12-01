@@ -3,6 +3,7 @@ In this 4-session course, we'll explore the entire Databricks platform.  We'll s
 
 ## Databricks Inicio
 • Fundamentales Databricks
+
 • Entender entorno
 • DEMO con ejercicios
 
@@ -19,4 +20,3 @@ In this 4-session course, we'll explore the entire Databricks platform.  We'll s
 • Data Auditing
 • Data Sharing
 • Data Monitoring (Quality)
-<img width="527" height="483" alt="image" src="https://github.com/user-attachments/assets/71be130c-1053-42a0-abdd-610b9396a745" />
